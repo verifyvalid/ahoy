@@ -10,49 +10,49 @@ module Ahoy
     end
 
     def track(name, properties = {}, options = {})
-      if exclude?
-        debug "Event excluded"
-      else
-        options = options.dup
-
-        options[:time] = trusted_time(options[:time])
-        options[:id] = ensure_uuid(options[:id] || generate_id)
-
-        @store.track_event(name, properties, options)
-      end
-      true
-    rescue => e
-      report_exception(e)
-    end
-
-    def track_visit(options = {})
-      if exclude?
-        debug "Visit excluded"
-      else
-        if options[:defer]
-          set_cookie("ahoy_track", true)
+      safely do
+        if exclude?
+          debug "Event excluded"
         else
           options = options.dup
 
-          options[:started_at] ||= Time.zone.now
+          options[:time] = trusted_time(options[:time])
+          options[:id] = ensure_uuid(options[:id] || generate_id)
 
-          @store.track_visit(options)
+          @store.track_event(name, properties, options)
         end
+        true
       end
-      true
-    rescue => e
-      report_exception(e)
+    end
+
+    def track_visit(options = {})
+      safely do
+        if exclude?
+          debug "Visit excluded"
+        else
+          if options[:defer]
+            set_cookie("ahoy_track", true)
+          else
+            options = options.dup
+
+            options[:started_at] ||= Time.zone.now
+
+            @store.track_visit(options)
+          end
+        end
+        true
+      end
     end
 
     def authenticate(user)
-      if exclude?
-        debug "Authentication excluded"
-      else
-        @store.authenticate(user)
+      safely do
+        if exclude?
+          debug "Authentication excluded"
+        else
+          @store.authenticate(user)
+        end
+        true
       end
-      true
-    rescue => e
-      report_exception(e)
     end
 
     def visit
@@ -122,18 +122,6 @@ module Ahoy
 
     def exclude?
       @store.exclude?
-    end
-
-    def report_exception(e)
-      begin
-        @store.report_exception(e)
-      rescue
-        # fail-safe
-        $stderr.puts "Error reporting exception"
-      end
-      if Rails.env.development? || Rails.env.test?
-        raise e
-      end
     end
 
     def generate_token

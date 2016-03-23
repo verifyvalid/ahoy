@@ -252,16 +252,12 @@ end
 
 Exceptions are rescued so analytics do not break your app.
 
-Ahoy uses [Errbase](https://github.com/ankane/errbase) to try to report them to a service by default.
+Ahoy uses [safely](https://github.com/ankane/safely) to try to report them to a service by default.
 
 To customize this, use:
 
 ```ruby
-class Ahoy::Store < Ahoy::Stores::ActiveRecordStore
-  def report_exception(e)
-    Rollbar.report_exception(e)
-  end
-end
+Safely.report_exception_method = -> { |e| Rollbar.error(e) }
 ```
 
 ### Use Different Models
