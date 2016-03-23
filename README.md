@@ -250,9 +250,7 @@ end
 
 ### Report Exceptions
 
-Exceptions are rescued so analytics do not break your app.
-
-Ahoy uses [safely](https://github.com/ankane/safely) to try to report them to a service by default.
+Exceptions are rescued so analytics do not break your app. Ahoy uses [Safely](https://github.com/ankane/safely) to try to report them to a service by default.
 
 To customize this, use:
 
