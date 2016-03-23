@@ -38,6 +38,11 @@ module Ahoy
         bot?
       end
 
+      def generate_token
+        generate_id
+      end
+
+      # deprecated
       def generate_id
         SecureRandom.uuid
       end

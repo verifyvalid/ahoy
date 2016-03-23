@@ -6,6 +6,10 @@ module Ahoy
         app.middleware.use Ahoy::Throttle
       end
 
+      if Ahoy.geocode.nil?
+        Ahoy.geocode = defined?(ActiveJob) ? :async : true
+      end
+
       next unless Ahoy.quiet
 
       # Parse PATH_INFO by assets prefix

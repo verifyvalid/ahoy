@@ -59,12 +59,12 @@ module Ahoy
       @visit ||= @store.visit
     end
 
-    def visit_id
-      @visit_id ||= ensure_uuid(existing_visit_id || visit_token)
+    def visit_token
+      @visit_token ||= existing_visit_id || (api? && request.params["visit_token"]) || generate_token
     end
 
-    def visitor_id
-      @visitor_id ||= ensure_uuid(existing_visitor_id || visitor_token)
+    def visitor_token
+      @visitor_token ||= existing_visitor_id || (api? && request.params["visitor_token"]) || generate_token
     end
 
     def new_visit?
@@ -90,14 +90,14 @@ module Ahoy
       @visit_properties ||= Ahoy::VisitProperties.new(request, @options.slice(:api))
     end
 
-    # for ActiveRecordTokenStore only - do not use
-    def visit_token
-      @visit_token ||= existing_visit_id || (@options[:api] && request.params["visit_token"]) || generate_id
+    # deprecated
+    def visit_id
+      @visit_id ||= ensure_uuid(existing_visit_id || visit_token)
     end
 
-    # for ActiveRecordTokenStore only - do not use
-    def visitor_token
-      @visitor_token ||= existing_visitor_id || (@options[:api] && request.params["visitor_token"]) || generate_id
+    # deprecated
+    def visitor_id
+      @visitor_id ||= ensure_uuid(existing_visitor_id || visitor_token)
     end
 
     protected
@@ -136,9 +136,10 @@ module Ahoy
       end
     end
 
-    def generate_id
+    def generate_token
       @store.generate_id
     end
+    alias_method :generate_id, :generate_token
 
     def existing_visit_id
       @existing_visit_id ||= request && (request.headers["Ahoy-Visit"] || request.cookies["ahoy_visit"])
@@ -154,6 +155,10 @@ module Ahoy
 
     def debug(message)
       Rails.logger.debug { "[ahoy] #{message}" }
+    end
+
+    def api?
+      @options[:api]
     end
   end
 end

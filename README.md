@@ -31,9 +31,9 @@ And add the javascript file in `app/assets/javascripts/application.js` after jQu
 
 Ahoy supports a number of data stores out of the box.  You can start with one of them and customize as needed, or create your own store from scratch.
 
-- [PostgreSQL](#postgresql)
-- [MySQL](#mysql-or-sqlite)
-- [SQLite](#mysql-or-sqlite)
+- [PostgreSQL](#postgresql-mysql-or-sqlite)
+- [MySQL](#postgresql-mysql-or-sqlite)
+- [SQLite](#postgresql-mysql-or-sqlite)
 - [MongoDB](#mongodb)
 - [Fluentd](#fluentd)
 - [RabbitMQ](#rabbitmq-master)
@@ -41,33 +41,9 @@ Ahoy supports a number of data stores out of the box.  You can start with one of
 - [Logs](#logs)
 - [Custom](#custom)
 
-### PostgreSQL
+### PostgreSQL, MySQL, or SQLite
 
-For Rails 4.2 and PostgreSQL 9.4 or greater, use:
-
-```sh
-rails generate ahoy:stores:active_record -d postgresql-jsonb
-rake db:migrate
-```
-
-For Rails 4 and PostgreSQL 9.2 or greater, use:
-
-```sh
-rails generate ahoy:stores:active_record -d postgresql
-rake db:migrate
-```
-
-Otherwise, follow the instructions for MySQL.
-
-### MySQL or SQLite
-
-Add [activeuuid](https://github.com/jashmenn/activeuuid) to your Gemfile.
-
-```ruby
-gem 'activeuuid', '>= 0.5.0'
-```
-
-And run:
+Run:
 
 ```sh
 rails generate ahoy:stores:active_record
