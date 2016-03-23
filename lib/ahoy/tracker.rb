@@ -60,24 +60,28 @@ module Ahoy
     end
 
     def visit_token
-      @visit_token ||= existing_visit_id || (api? && request.params["visit_token"]) || generate_token
+      @visit_token ||= existing_visit_token || (api? && request.params["visit_token"]) || generate_token
     end
 
     def visitor_token
-      @visitor_token ||= existing_visitor_id || (api? && request.params["visitor_token"]) || generate_token
+      @visitor_token ||= existing_visitor_token || (api? && request.params["visitor_token"]) || generate_token
     end
 
     def new_visit?
-      !existing_visit_id
+      !existing_visit_token
+    end
+
+    def new_visitor?
+      !existing_visitor_token
     end
 
     def set_visit_cookie
-      set_cookie("ahoy_visit", visit_id, Ahoy.visit_duration)
+      set_cookie("ahoy_visit", visit_token, Ahoy.visit_duration)
     end
 
     def set_visitor_cookie
-      unless existing_visitor_id
-        set_cookie("ahoy_visitor", visitor_id, Ahoy.visitor_duration)
+      if new_visitor?
+        set_cookie("ahoy_visitor", visitor_token, Ahoy.visitor_duration)
       end
     end
 
@@ -92,12 +96,12 @@ module Ahoy
 
     # deprecated
     def visit_id
-      @visit_id ||= ensure_uuid(existing_visit_id || visit_token)
+      @visit_id ||= ensure_uuid(existing_visit_token || visit_token)
     end
 
     # deprecated
     def visitor_id
-      @visitor_id ||= ensure_uuid(existing_visitor_id || visitor_token)
+      @visitor_id ||= ensure_uuid(existing_visitor_token || visitor_token)
     end
 
     protected
@@ -129,12 +133,12 @@ module Ahoy
     end
     alias_method :generate_id, :generate_token
 
-    def existing_visit_id
-      @existing_visit_id ||= request && (request.headers["Ahoy-Visit"] || request.cookies["ahoy_visit"])
+    def existing_visit_token
+      @existing_visit_token ||= request && (request.headers["Ahoy-Visit"] || request.cookies["ahoy_visit"])
     end
 
-    def existing_visitor_id
-      @existing_visitor_id ||= request && (request.headers["Ahoy-Visitor"] || request.cookies["ahoy_visitor"])
+    def existing_visitor_token
+      @existing_visitor_token ||= request && (request.headers["Ahoy-Visitor"] || request.cookies["ahoy_visitor"])
     end
 
     def ensure_uuid(id)
