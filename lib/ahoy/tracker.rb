@@ -18,7 +18,15 @@ module Ahoy
         options[:time] = trusted_time(options[:time])
         options[:id] = ensure_uuid(options[:id] || generate_id)
 
-        @store.track_event(name, properties, options)
+        info = {
+          id: options[:id],
+          visit_token: visit_token,
+          name: name,
+          properties: properties,
+          time: options[:time]
+        }
+
+        @store.track_event(info)
       end
       true
     rescue => e
@@ -36,10 +44,49 @@ module Ahoy
 
           options[:started_at] ||= Time.zone.now
 
-          @store.track_visit(options)
+          info = {
+            visit_token: visit_token,
+            visitor_token: visitor_token,
+            time: options[:started_at]
+          }
+
+          keys = visit_properties.keys
+          keys.each do |key|
+            info[key] = visit_properties[key]
+          end
+
+          @store.track_visit(info)
+
+          ip = info[:ip]
+          info = {
+            visit_token: visit_token
+          }
+          # Ahoy::GeocodeJob.perform_later(info)
+
+          deckhand = Deckhands::LocationDeckhand.new(ip)
+          Ahoy::VisitProperties::LOCATION_KEYS.each do |key|
+            info[key] = deckhand.send(key)
+          end
+
+          @store.geocode(info)
         end
       end
       true
+    rescue => e
+      report_exception(e)
+    end
+
+    def update_visit(properties)
+      if exclude?
+        debug "Visit excluded"
+      else
+        info = {
+          visit_token: visit_token,
+          properties: properties
+        }
+        @store.update_visit(info)
+        true
+      end
     rescue => e
       report_exception(e)
     end
