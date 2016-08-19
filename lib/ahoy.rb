@@ -40,9 +40,6 @@ rescue LoadError
 end
 require "ahoy/geocode_job" if defined?(ActiveJob)
 
-# deprecated
-require "ahoy/subscribers/active_record"
-
 module Ahoy
   UUID_NAMESPACE = UUIDTools::UUID.parse("a82ae811-5011-45ab-a728-569df7499c5f")
 
@@ -72,18 +69,6 @@ module Ahoy
   mattr_accessor :mount
   self.mount = true
 
-  # no longer used
-  mattr_accessor :throttle
-  self.throttle = true
-
-  # no longer used
-  mattr_accessor :throttle_limit
-  self.throttle_limit = 20
-
-  # no longer used
-  mattr_accessor :throttle_period
-  self.throttle_period = 1.minute
-
   mattr_accessor :job_queue
   self.job_queue = :ahoy
 
@@ -95,19 +80,6 @@ module Ahoy
       UUIDTools::UUID.sha1_create(UUID_NAMESPACE, id).to_s
     end
   end
-
-  # deprecated
-
-  mattr_accessor :domain
-  mattr_accessor :visit_model
-  mattr_accessor :user_method
-  mattr_accessor :exclude_method
-
-  mattr_accessor :subscribers
-  self.subscribers = []
-
-  mattr_accessor :track_bots
-  self.track_bots = false
 end
 
 if defined?(Rails)
