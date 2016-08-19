@@ -52,13 +52,12 @@ module Ahoy
   mattr_accessor :cookie_domain
 
   mattr_accessor :track_visits_immediately
-  self.track_visits_immediately = false
+  self.track_visits_immediately = true
 
   mattr_accessor :quiet
-  self.quiet = true
 
   mattr_accessor :geocode
-  self.geocode = true
+  self.geocode = :async
 
   mattr_accessor :max_content_length
   self.max_content_length = 8192
