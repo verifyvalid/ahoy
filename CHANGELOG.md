@@ -1,6 +1,9 @@
-## 1.4.3 [unreleased]
+## 1.5.0 [unreleased]
 
+- Removed throttling to fix issues with `Rack::Attack` usage outside Ahoy
+- Ensure basic token requirements
 - Fixed visit recreation on cookie expiration
+- Fixed issue where `/ahoy/visits` is called indefinitely when `Ahoy.cookie_domain = :all`
 
 ## 1.4.2
 
