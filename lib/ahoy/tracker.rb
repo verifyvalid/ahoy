@@ -10,96 +10,85 @@ module Ahoy
     end
 
     def track(name, properties = {}, options = {})
-      if exclude?
-        debug "Event excluded"
-      else
-        options = options.dup
-
-        options[:time] = trusted_time(options[:time])
-        options[:id] = ensure_uuid(options[:id] || generate_id)
-
-        info = {
-          id: options[:id],
-          visit_token: visit_token,
-          name: name,
-          properties: properties,
-          time: options[:time]
-        }
-
-        @store.track_event(info)
-      end
-      true
-    rescue => e
-      report_exception(e)
-    end
-
-    def track_visit(options = {})
-      if exclude?
-        debug "Visit excluded"
-      else
-        if options[:defer]
-          set_cookie("ahoy_track", true, nil, false)
+      Safely.safely do
+        if exclude?
+          debug "Event excluded"
         else
           options = options.dup
 
-          options[:started_at] ||= Time.zone.now
+          time = trusted_time(options[:time])
+          event_token = ensure_uuid(options[:id] || generate_id)
 
           info = {
+            event_token: event_token,
             visit_token: visit_token,
-            visitor_token: visitor_token,
-            time: options[:started_at]
+            name: name,
+            properties: properties,
+            time: time
           }
 
-          keys = visit_properties.keys
-          keys.each do |key|
-            info[key] = visit_properties[key]
-          end
-
-          @store.track_visit(info)
-
-          ip = info[:ip]
-          info = {
-            visit_token: visit_token
-          }
-          # Ahoy::GeocodeJob.perform_later(info)
-
-          deckhand = Deckhands::LocationDeckhand.new(ip)
-          Ahoy::VisitProperties::LOCATION_KEYS.each do |key|
-            info[key] = deckhand.send(key)
-          end
-
-          @store.geocode(info)
+          @store.track_event(info)
         end
-      end
-      true
-    rescue => e
-      report_exception(e)
-    end
-
-    def update_visit(properties)
-      if exclude?
-        debug "Visit excluded"
-      else
-        info = {
-          visit_token: visit_token,
-          properties: properties
-        }
-        @store.update_visit(info)
         true
       end
-    rescue => e
-      report_exception(e)
+    end
+
+    def track_visit(options = {})
+      Safely.safely do
+        if exclude?
+          debug "Visit excluded"
+        else
+          if options[:defer]
+            set_cookie("ahoy_track", true, nil, false)
+          else
+            options = options.dup
+
+            options[:started_at] ||= Time.zone.now
+
+            info = {
+              visit_token: visit_token,
+              visitor_token: visitor_token,
+              time: options[:started_at]
+            }
+
+            keys = visit_properties.keys
+            keys.each do |key|
+              info[key] = visit_properties[key]
+            end
+
+            @store.track_visit(info)
+
+            # ip = info[:ip]
+            # info = {
+            #   visit_token: visit_token
+            # }
+            # # Ahoy::GeocodeJob.perform_later(info)
+
+            # deckhand = Deckhands::LocationDeckhand.new(ip)
+            # Ahoy::VisitProperties::LOCATION_KEYS.each do |key|
+            #   info[key] = deckhand.send(key)
+            # end
+
+            # @store.geocode(info)
+          end
+        end
+        true
+      end
     end
 
     def authenticate(user)
-      if exclude?
-        debug "Authentication excluded"
-      else
-        @store.authenticate(user)
+      Safely.safely do
+        if exclude?
+          debug "Authentication excluded"
+        else
+          info = {
+            visit_token: visit_token,
+            user: user
+          }
+          @store.authenticate(info)
+        end
+        true
       end
-      true
-    rescue => e
-      report_exception(e)
     end
 
     def visit

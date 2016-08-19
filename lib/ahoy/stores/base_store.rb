@@ -5,16 +5,17 @@ module Ahoy
         @options = options
       end
 
-      def track_visit(options)
+      def track_visit(info)
       end
 
-      def track_event(name, properties, options)
+      def track_event(info)
       end
 
       def visit
       end
 
-      def authenticate(user)
+      def authenticate(info)
+        user = info[:user]
         @user = user
         if visit && visit.respond_to?(:user) && !visit.user
           begin
@@ -24,10 +25,6 @@ module Ahoy
             # do nothing
           end
         end
-      end
-
-      def report_exception(e)
-        raise e
       end
 
       def user
@@ -60,14 +57,10 @@ module Ahoy
         @ahoy ||= @options[:ahoy]
       end
 
-      def visit_properties
-        ahoy.visit_properties
-      end
-
-      def set_visit_properties(visit)
-        keys = visit_properties.keys
+      def set_visit_properties(visit, info)
+        keys = info.keys
         keys.each do |key|
-          visit.send(:"#{key}=", visit_properties[key]) if visit.respond_to?(:"#{key}=") && visit_properties[key]
+          visit.send(:"#{key}=", info[key]) if visit.respond_to?(:"#{key}=") && info[key]
         end
       end
 

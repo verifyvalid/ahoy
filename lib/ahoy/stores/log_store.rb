@@ -1,29 +1,29 @@
 module Ahoy
   module Stores
     class LogStore < BaseStore
-      def track_visit(options, &block)
+      def track_visit(info, &block)
         data = {
-          id: ahoy.visit_id,
-          visitor_id: ahoy.visitor_id
-        }.merge(visit_properties.to_hash)
+          id: info[:visit_token],
+          visitor_id: info[:visitor_token]
+        }.merge(info.except(:visit_token, :visitor_token))
         data[:user_id] = user.id if user
-        data[:started_at] = options[:started_at]
+        data[:started_at] = info[:time]
 
         yield(data) if block_given?
 
         log_visit(data)
       end
 
-      def track_event(name, properties, options, &block)
+      def track_event(info, &block)
         data = {
-          id: options[:id],
-          name: name,
-          properties: properties,
-          visit_id: ahoy.visit_id,
+          id: info[:event_token],
+          name: info[:name],
+          properties: info[:properties],
+          visit_id: info[:visit_token],
           visitor_id: ahoy.visitor_id
         }
         data[:user_id] = user.id if user
-        data[:time] = options[:time]
+        data[:time] = info[:time]
 
         yield(data) if block_given?
 

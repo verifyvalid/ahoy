@@ -1,16 +1,16 @@
 module Ahoy
   module Stores
     class ActiveRecordStore < BaseStore
-      def track_visit(options, &block)
+      def track_visit(info, &block)
         @visit =
           visit_model.new do |v|
             v.id = ahoy.visit_id
             v.visitor_id = ahoy.visitor_id
             v.user = user if v.respond_to?(:user=)
-            v.started_at = options[:started_at]
+            v.started_at = info[:started_at]
           end
 
-        set_visit_properties(visit)
+        set_visit_properties(visit, info)
 
         yield(visit) if block_given?
 
@@ -22,15 +22,15 @@ module Ahoy
         end
       end
 
-      def track_event(name, properties, options, &block)
+      def track_event(info, &block)
         event =
           event_model.new do |e|
-            e.id = options[:id]
+            e.id = options[:event_token]
             e.visit_id = ahoy.visit_id
             e.user = user if e.respond_to?(:user=)
-            e.name = name
-            e.properties = properties
-            e.time = options[:time]
+            e.name = info[:name]
+            e.properties = info[:properties]
+            e.time = info[:time]
           end
 
         yield(event) if block_given?
