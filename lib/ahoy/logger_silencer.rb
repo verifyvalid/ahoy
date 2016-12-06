@@ -31,7 +31,9 @@ module Ahoy
     end
 
     def add_with_threadsafety(severity, message = nil, progname = nil, &block)
-      if (defined?(@logdev) && @logdev.nil?) || (severity || UNKNOWN) < level
+      # When Linguistics gem is used level == :warn, and that fails
+      safe_level = level.is_a?(Symbol) ? Logger.const_get(level.upcase) : level
+      if (defined?(@logdev) && @logdev.nil?) || (severity || UNKNOWN) < safe_level
         true
       else
         add_without_threadsafety(severity, message, progname, &block)
